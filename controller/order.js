@@ -33,7 +33,7 @@ async function orderAllview(request, response) {
     let find = await viewALLorder(request.body).catch((err) => {
         return { error: err }
     })
-    console.log(find)
+
     if (!find || find.error) {
         return response.status(500).send({ error: find.error })
     }
@@ -44,7 +44,7 @@ async function payment(request, response) {
     let find = await pay(request.body, request.userData).catch((err) => {
         return { error: err }
     })
-    console.log(find)
+
     if (!find || find.error) {
         return response.status(505).send({ error: find.error })
     }

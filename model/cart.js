@@ -6,7 +6,7 @@ const { sequelize, QueryTypes } = require("../init/dbconnect")
 function cartJoi(param) {
     let schema = joi.object({
         dish_id: joi.number().min(1).required(),
-        quantity:joi.number().min(0).max(5).required()
+        quantity: joi.number().min(0).max(5).required()
     }).options({
         abortEarly: false
     })
@@ -29,11 +29,11 @@ async function cartAdd(param, userData) {
     let find = await Cart.findOne({ where: { user_id: userData.id, dish_id: param.dish_id } }).catch((err) => {
         return { error: err }
     })
-    console.log(find)
+
     if (find) {
         return { error: " This product is already in your cart please choose another" }
     }
-    let add = await Cart.create({ user_id: userData.id, dish_id: param.dish_id , quantity:param.quantity}).catch((err) => {
+    let add = await Cart.create({ user_id: userData.id, dish_id: param.dish_id, quantity: param.quantity }).catch((err) => {
         return { error: err }
     })
     if (!add || add.error) {
@@ -45,7 +45,7 @@ async function cartAdd(param, userData) {
 function updateJoi(param) {
     let schema = joi.object({
         dish_id: joi.number().min(1).required(),
-        quantity:joi.number().min(0).max(5).required()
+        quantity: joi.number().min(0).max(5).required()
     }).options({
         abortEarly: false
     })
@@ -60,25 +60,29 @@ function updateJoi(param) {
     return { data: check.value }
 }
 
-async function cartUpdate(param,userData){
+async function cartUpdate(param, userData) {
     let check = updateJoi(param)
-    if(!check || check.error){
-        return { error: check.error}
+    if (!check || check.error) {
+        return { error: check.error }
     }
-    let find = await Cart.findOne({where:{dish_id:param.dish_id,
-      user_id:userData.id}}).catch((err)=>{
-        return { error: err}
-      })
-      if(!find || find.error){
-        return { error : " Internal Server Error"}
-      }
-      let update= await Cart.update({quantity:param.quantity},{where:{id:find.id}}).catch((err)=>{
-        return { error: err}
-      })
-      if(!update || update.error){
-      return { error: "OOps something went wrong please try again later"}
-      }
-      return { data : " Ok"}
+    let find = await Cart.findOne({
+        where: {
+            dish_id: param.dish_id,
+            user_id: userData.id
+        }
+    }).catch((err) => {
+        return { error: err }
+    })
+    if (!find || find.error) {
+        return { error: " Internal Server Error" }
+    }
+    let update = await Cart.update({ quantity: param.quantity }, { where: { id: find.id } }).catch((err) => {
+        return { error: err }
+    })
+    if (!update || update.error) {
+        return { error: "OOps something went wrong please try again later" }
+    }
+    return { data: " Ok" }
 }
 
 async function cartView(userData) {
@@ -89,20 +93,20 @@ async function cartView(userData) {
     if (!find || find.error) {
         return { error: "internal  server error" }
     }
-    let getProduct= await sequelize.query("SELECT dishes.name, dishes.price,dishes.discount ,dishes.discounted_price, dishes.image_path, cart.quantity FROM dishes LEFT JOIN cart ON dishes.id = cart.dish_id LEFT JOIN user ON user.id = cart.user_id where user.id = :key", {
-        replacements:{key:userData.id},
-        type:QueryTypes.SELECT
-    }).catch((err)=>{
-        return { error: err}
+    let getProduct = await sequelize.query("SELECT dishes.name, dishes.price,dishes.discount ,dishes.discounted_price, dishes.image_path, cart.quantity FROM dishes LEFT JOIN cart ON dishes.id = cart.dish_id LEFT JOIN user ON user.id = cart.user_id where user.id = :key", {
+        replacements: { key: userData.id },
+        type: QueryTypes.SELECT
+    }).catch((err) => {
+        return { error: err }
     })
     console.log(getProduct)
-    if(!getProduct || getProduct.error){
-        return { error:"Internal server error"}
+    if (!getProduct || getProduct.error) {
+        return { error: "Internal server error" }
     }
-    if(getProduct.length == 0){
-        return { data: "Use dont have anything in your cart "}
+    if (getProduct.length == 0) {
+        return { data: "Use dont have anything in your cart " }
     }
-    return { data: getProduct}
+    return { data: getProduct }
 }
 
 function removeCartJoi(param) {
@@ -143,7 +147,7 @@ async function cartRemove(param, userData) {
     }
     let remove = await Cart.destroy({
         where: {
-            id:find.id
+            id: find.id
         }
     }).catch((err) => {
         return { error: err }
@@ -155,4 +159,4 @@ async function cartRemove(param, userData) {
 }
 
 
-module.exports = { cartAdd,cartUpdate ,cartView , cartRemove}
+module.exports = { cartAdd, cartUpdate, cartView, cartRemove }

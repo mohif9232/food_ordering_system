@@ -43,6 +43,10 @@ User.init({
         type: DataTypes.INTEGER,
         defaultValue: true
     },
+    is_deletedBy_user: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     updatedBy: {
         type: DataTypes.INTEGER,
         allowNull: true

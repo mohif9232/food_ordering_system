@@ -10,6 +10,7 @@
     "mysql2": "^2.3.3",
     "nodemailer": "^6.8.0",
     "randomstring": "^1.2.3",
-    "sequelize": "^6.25.6"
+    "sequelize": "^6.25.6",
+    "winston": "^3.8.2"
   }
 }

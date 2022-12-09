@@ -1,4 +1,4 @@
-let { register_me, login_me, update_me, change_pass, forget_me, reset_me, get_me, add_profile, update_profile, deactivate_me, findUser, assignPermission, getAllPer, userPermission, updateUser, deleteUser, unDeleteUser, activeUser, unActiveUser, exportUsers } = require("../controller/user")
+let { register_me, login_me, update_me, change_pass, forget_me, reset_me, get_me, add_profile, update_profile, deactivate_me, activate_me, findUser, assignPermission, getAllPer, userPermission, updateUser, deleteUser, unDeleteUser, activeUser, unActiveUser, exportUsers } = require("../controller/user")
 let { addCategory, updateCategory, categoryView, deleteCategory, UndeleteCategory, activeCategory, unactiveCategory } = require("../controller/category")
 let { addDish, updateDish, viewDish, deleteDish, undeleteDish, blockDish, unblockDish, exportProduct } = require("../controller/product")
 let { addCart, updateCart, viewCart, removeCart } = require("../controller/cart")
@@ -23,6 +23,8 @@ app.get("/about_me", auth("User"), get_me)
 
 app.post("/change_password", auth("User"), change_pass)
 app.delete("/deactivate_me", auth("User"), deactivate_me)
+app.put("/activate_me", activate_me)
+
 
 
 app.post("/upload_profile_pic", auth("User"), add_profile);

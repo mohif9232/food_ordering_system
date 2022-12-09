@@ -4,6 +4,7 @@ let { Dish, Op } = require("../schema/dishes")
 const { sequelize, QueryTypes } = require("../init/dbconnect")
 let { email } = require("../helper/email")
 const { User } = require("../schema/user")
+const { use } = require("express/lib/router")
 
 
 
@@ -30,6 +31,9 @@ async function orderPlace(param, productData, userData) {
     if (!check || check.error) {
         return { error: check.error }
     }
+    if (productData.quantity == 0 || param.quantity > productData.quantity) {
+        return { error: "This product is out of stock Please try again later" }
+    }
     let order = await Order.create({
         user_id: userData.id,
         product_id: productData.id,
@@ -45,6 +49,13 @@ async function orderPlace(param, productData, userData) {
     console.log(order)
     if (!order || order.error) {
         return { error: "Internal Server Error" }
+    }
+    let product = await Dish.update({ quantity: (productData.quantity - param.quantity) }, { where: { id: productData.id } }).catch((err) => {
+        return { error: err }
+    })
+
+    if (!product || product.error) {
+        return { error: "Internal server error" }
     }
     return { data: "your order placed Successfullyyy..." }
 }
@@ -215,7 +226,7 @@ async function confirm(param, userData) {
     if (!con || con.error) {
         return { error: "please enter proper order id" }
     }
-    let confirm = await Order.update({ order_status: 6, confirmedBy: userData.id }, { where: { id: con.id } }).catch((err) => {
+    let confirm = await Order.update({ order_status: 6, payment_status: 1, delivery_status: 1, confirmedBy: userData.id }, { where: { id: con.id } }).catch((err) => {
         return { error: err }
     })
     if (!confirm || confirm.error) {
@@ -277,6 +288,7 @@ async function cancel(param, userData) {
         return { error: err }
     })
 
+
     if (!cancel || cancel.error) {
         return { error: " Internal server error" }
     }
@@ -299,6 +311,24 @@ async function adminCancel(param, userData) {
     })
     if (!cancel || cancel.error) {
         return { error: " Internal server error" }
+    }
+    let user = await User.findOne({ where: { id: find.user_id } }).catch((err) => {
+        return { error: err }
+    })
+    if (!user || user.error) {
+        return { error: user.error }
+    }
+    let mailoption = {
+        from: "mohif.waghu@somaiya.edu",
+        to: user.username,
+        subject: "Order Cancellation mail Mail",
+        text: `Your order id no ${find.id} is cancelled due to some reason sorry for inconvinience`
+    };
+    let sendMail = await email(mailoption).catch((err) => {
+        return { error: err }
+    })
+    if (!sendMail || sendMail.error) {
+        return { error: sendMail.error }
     }
     return { data: `Order cancel successfullyyy of order id:${find.id}` }
 }

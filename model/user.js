@@ -116,6 +116,9 @@ async function loginUser(param) {
     if (findOne.is_active == 0) {
         return { error: "your account deactivate by admin" }
     }
+    if (findOne.is_deletedBy_user == true) {
+        return { error: "Your account is deactivate by you please activate then login" }
+    }
     let checkpass = await bcrypt.compare(param.password, findOne.password).catch((err) => {
         return { error: err }
     })
@@ -380,15 +383,54 @@ async function deactivate(param, userData) {
     if (!finduser || (finduser && finduser.error)) {
         return { error: "Invalid Token" }
     }
-    let update = await User.update({ is_deleted: 1 }, { where: { id: finduser.id } }).catch((err) => {
+    let update = await User.update({ is_deletedBy_user: true }, { where: { id: finduser.id } }).catch((err) => {
         return { error: err }
     });
-    console.log(update)
     if (!update || update.error) {
         return { error: "Internal Server Error" }
     }
-    return { data: "You are deactivate successfully for activation again please login again" }
+    return { data: "You are deactivate successfully" }
 
+}
+function joiActivate(param) {
+    let schema = joi.object({
+        username: joi.string().max(30).min(5).required(),
+        password: joi.string().max(20).min(2).required()
+    }).options({ abortEarly: false })
+    let check = schema.validate(param)
+    if (check.error) {
+        let error = [];
+        for (let err of check.error.details) {
+            error.push(err.message)
+        }
+        return { error: error }
+    }
+    return { data: check.value }
+}
+async function activate(param) {
+    let check = joiActivate(param)
+    if (!check || check.error) {
+        return { error: check.error }
+    }
+    let find = await User.findOne({ where: { username: param.username }, raw: true }).catch((err) => {
+        return { error: err }
+    })
+    if (!find || find.error) {
+        return { error: "Username & password not matched" }
+    }
+    let compare = await bcrypt.compare(param.password, find.password).catch((err) => {
+        return { error: err }
+    })
+    if (!compare || compare.error) {
+        return { error: "Username & password not matched" }
+    }
+    let activate = await User.update({ is_deletedBy_user: false }, { where: { id: find.id } }).catch((err) => {
+        return { error: err }
+    })
+    if (!activate || activate.error) {
+        return { error: "Internal Server Error" }
+    }
+    return { data: "Successfully activate your account you can log in now" }
 }
 
 ////get all user
@@ -843,6 +885,7 @@ module.exports = {
     addprofile,
     updateProfile,
     deactivate,
+    activate,
     findAll,
     assignPer,
     getpermission,

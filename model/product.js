@@ -170,16 +170,18 @@ async function dishView(param) {
     };
     let data = {};
     if (param.product_id) {
-        data = { where: { id: param.product_id } }
+        data = { id: param.product_id }
     }
     if (param.name) {
-        data = { where: { name: param.name } }
+        data = { name: param.name }
     }
 
-    let get = await Dish.findAll(data).catch((err) => {
+    let get = await Dish.findAll({ attributes: ["name", "price", "discount", "discounted_price", "is_available"], where: data, raw: true }).catch((err) => {
         return { error: err }
     });
-    console.log(get)
+    for (let a of get) {
+        a.is_available = (a.is_available == 1) ? "This dish is avalilable" : "This dish is not available"
+    }
     if (!get || get.error || get.length == 0) {
         return { error: "OOps this dish is not available please search another" }
     }
