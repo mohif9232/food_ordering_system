@@ -8,7 +8,13 @@ async function placeOrder(request, response) {
     if (!data || data.error) {
         return response.status(500).send({ error: data.error })
     }
-
+    if (data.data[0].quantity == 0 || request.body.quantity > data.data[0].quantity) {
+        return response.status(402).send({ error: "This product is out of stock Please try again later" })
+    }
+    console.log(data.data[0])
+    if (data.data[0].is_available == "This dish is not available") {
+        return response.status(403).send({ error: "This dish is not available for order" })
+    }
     let place = await orderPlace(request.body, data.data[0], request.userData).catch((err) => {
         return { error: err }
     })

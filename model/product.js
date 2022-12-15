@@ -168,15 +168,15 @@ async function dishView(param) {
     if (!check || check.error) {
         return { error: check.error }
     };
-    let data = {};
+    let data = { is_deleted: { [Op.ne]: 1 } };
     if (param.product_id) {
-        data = { id: param.product_id }
+        data = { id: param.product_id, is_deleted: { [Op.ne]: 1 } }
     }
     if (param.name) {
-        data = { name: param.name }
+        data = { name: param.name, is_deleted: { [Op.ne]: 1 } }
     }
 
-    let get = await Dish.findAll({ attributes: ["name", "price", "discount", "discounted_price", "is_available"], where: data, raw: true }).catch((err) => {
+    let get = await Dish.findAll({ attributes: ["id", "name", "price", "discount", "discounted_price", "is_available"], where: data, raw: true }).catch((err) => {
         return { error: err }
     });
     for (let a of get) {
